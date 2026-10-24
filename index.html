@@ -158,7 +158,8 @@ function modal(title,body,submit){let r=document.getElementById("modalRoot");r.i
 function closeModal(){document.getElementById("modalRoot").innerHTML=""}
 function field(f,v){let [k,l,t="text",req,opts]=f,id="f_"+k,lab='<label for="'+id+'">'+l+(req?" *":"")+'</label>',x="";if(t==="pdf")x='<input id="'+id+'" name="'+k+'" type="file" accept="application/pdf,.pdf"'+(req&&!v?" required":"")+'>'+(v?'<p><span class="badge green">PDF tersimpan</span> Pilih file baru jika ingin mengganti.</p>':'<p class="notice">Unggah file PDF agar anggota dapat membacanya langsung.</p>');else if(t==="select")x='<select id="'+id+'" name="'+k+'"'+(req?" required":"")+'><option value="">-- Pilih --</option>'+opts.map(o=>'<option value="'+esc(o)+'"'+(v===o?" selected":"")+'>'+esc(o)+'</option>').join("")+'</select>';else if(t==="textarea")x='<textarea id="'+id+'" name="'+k+'"'+(req?" required":"")+'>'+esc(v||"")+'</textarea>';else if(t==="file")x='<input id="'+id+'" name="'+k+'" type="file" accept="image/jpeg,image/png">';else x='<input id="'+id+'" name="'+k+'" type="'+t+'" value="'+esc(v||"")+'"'+(req?" required":"")+'>';return '<div class="field '+(t==="textarea"?"full":"")+'">'+lab+x+'</div>'}
 function readImg(file){return new Promise((res,rej)=>{let r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
-async function getPhoto(input,old){let f=input?.files?.[0];if(!f)return old||"";if(!["image/jpeg","image/png"].includes(f.type))throw Error("Foto hanya JPG/JPEG atau PNG.");if(f.size>1048576)throw Error("Ukuran foto maksimal 1 MB.");return readImg(f)}
+async function getPhoto(input,old){let f=input?.files?.[0];if(!f)return old||"";if(!["image/jpeg","image/png"].includes(f.type))throw Error("Foto hanya JPG/JPEG atau PNG.");if(f.size>8*1048576)throw Error("Ukuran foto asli maksimal 8 MB.");const src=await readImg(f);return compressPhotoData(src,700*1024)}
+function compressPhotoData(src,maxBytes=700*1024){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{try{let scale=Math.min(1,1200/Math.max(img.naturalWidth,img.naturalHeight)),canvas=document.createElement("canvas"),ctx,q=.82,data;canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));ctx=canvas.getContext("2d");ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);do{data=canvas.toDataURL("image/jpeg",q);if(data.length<=maxBytes)break;if(q>.5)q-=.08;else{canvas.width=Math.max(1,Math.round(canvas.width*.85));canvas.height=Math.max(1,Math.round(canvas.height*.85));ctx=canvas.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);q=.72}}while(canvas.width>240&&canvas.height>240);if(data.length>maxBytes)throw Error("Foto tidak dapat diperkecil dengan aman. Pilih foto lain.");resolve(data)}catch(e){reject(e)}};img.onerror=()=>reject(Error("Foto tidak dapat dibaca."));img.src=src})}
 function formRecord(k,item){if(!adminOnly())return;let z=cfg[k],body='<form><div class="formgrid">'+z.fields.map(f=>field(f,item?item[f[0]]:(f[0]==="status"&&k==="anggota"?"Aktif":f[0]==="status"&&k==="program"?"Rencana":""))).join("")+'</div>'+(item?.foto?'<img class="avatar" src="'+item.foto+'">':"")+'<div class="formactions"><button type="button" class="btn" data-close>Batal</button><button class="btn primary">Simpan</button></div></form>';modal((item?"Edit ":"Tambah ")+z.one,body,async f=>{if(!adminOnly())return;let d={};try{for(let a of z.fields){let [key,label,type="text",req]=a,el=f.elements[key];if(type==="file")d.foto=await getPhoto(el,item?.foto);else if(type==="pdf"){let file=el.files?.[0];if(file){if(file.type!=="application/pdf"&&!file.name.toLowerCase().endsWith(".pdf"))return toast("Isi Materi harus berupa file PDF.");if(file.size>5*1024*1024)return toast("Ukuran PDF maksimal 5 MB.");d[key]=await readImg(file);d[key+"Nama"]=file.name}else{d[key]=item?.[key]||"";d[key+"Nama"]=item?.[key+"Nama"]||"";if(req&&!d[key])return toast("Silakan unggah file PDF.")}}else{d[key]=el.value.trim();if(req&&!d[key])return toast("Kolom "+label+" wajib diisi.")}}}catch(e){return toast(e.message)}if(d.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email))return toast("Format e-mail tidak valid.");if(k==="inventaris")d.jumlah=Number(d.jumlah||0);if(k==="pengumuman"&&!d.pembuat)d.pembuat=me.name;if(item)Object.assign(item,d);else{d.id=nextId(db[z.list]);db[z.list].push(d)}if(save()){closeModal();render(k);toast("Data tersimpan.")}})}
 function viewRecord(k,id){if(!adminOnly())return;let z=cfg[k],x=db[z.list].find(a=>a.id===id);if(!x)return;let body='<table><tbody>'+z.fields.map(f=>'<tr><th>'+esc(f[1])+'</th><td>'+(f[0]==="foto"&&x.foto?'<img class="avatar" src="'+x.foto+'">':f[0]==="isiPdf"&&x.isiPdf?'<button class="btn blue" data-act="view-pdf" data-id="'+x.id+'">📄 Buka PDF</button> '+esc(x.isiPdfNama||"File PDF"):esc(["tanggal","tanggalLahir","tanggalMasuk","mulai","selesai"].includes(f[0])?dateFmt(x[f[0]]):x[f[0]]||"-"))+'</td></tr>').join("")+'</tbody></table><div class="formactions"><button class="btn primary" data-close>Tutup</button></div>';modal("Detail "+z.one,body)}
 function delRecord(k,id){if(!adminOnly()||!confirm("Hapus data ini?"))return;db[cfg[k].list]=db[cfg[k].list].filter(x=>x.id!==id);if(k==="kegiatan")delete db.attendance[id];save();render(k)}
@@ -350,10 +351,30 @@ function updateSyncStatus(message) {
 }
 window.pmrUpdateSyncStatus = updateSyncStatus;
 function cloudDocData(snap) { return snap.exists() ? snap.data() : null; }
+// Firestore membatasi satu nilai field sekitar 1 MiB. Foto base64 membesar
+// sekitar 33%, jadi foto lama yang terlalu besar diperkecil sebelum dikirim.
+function compressDataUrl(src,maxBytes=700*1024){
+ return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{try{let w=img.naturalWidth,h=img.naturalHeight,scale=Math.min(1,1200/Math.max(w,h));w=Math.max(1,Math.round(w*scale));h=Math.max(1,Math.round(h*scale));const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;let ctx=canvas.getContext("2d"),q=.78,data;do{ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);data=canvas.toDataURL("image/jpeg",q);if(data.length<=maxBytes)break;if(q>.5)q-=.08;else{w=Math.max(1,Math.round(w*.85));h=Math.max(1,Math.round(h*.85));canvas.width=w;canvas.height=h;ctx=canvas.getContext("2d");q=.7}}while(w>240&&h>240);if(data.length>maxBytes)throw Error("Foto terlalu besar untuk dikirim ke Firebase.");resolve(data)}catch(e){reject(e)}};img.onerror=()=>reject(Error("Foto antrean tidak dapat dibaca untuk diperkecil."));img.src=src});
+}
+async function shrinkQueuedPhotos(queue){
+ let changed=false;
+ for(const op of queue){
+  if(op.type!=="set"||!op.data||typeof op.data.foto!=="string"||!op.data.foto.startsWith("data:image/")||op.data.foto.length<=700*1024)continue;
+  const before=op.data.foto.length;
+  op.data={...op.data,foto:await compressDataUrl(op.data.foto)};
+  op.lastError="Foto diperkecil otomatis sebelum sinkronisasi ("+before+" menjadi "+op.data.foto.length+" karakter).";
+  if(op.status==="failed")op.status="pending";
+  changed=true;
+  try{const local=JSON.parse(localStorage.getItem("pmr_madya_bonerate_v2")||"{}");const list=local[op.collection==="profil_pengurus"?"pengurus":op.collection]||[];const item=list.find(x=>String(x.id)===String(op.id));if(item)item.foto=op.data.foto;localStorage.setItem("pmr_madya_bonerate_v2",JSON.stringify(local));}catch(e){console.warn("Pembaruan foto lokal:",e)}
+ }
+ if(changed)writeQueue(queue);
+ return changed;
+}
 async function flushQueue() {
   if (!firebaseUser || role !== "admin" || !navigator.onLine) return {ok:false, pending:readQueue().length};
   const q = readQueue();
   if (!q.length) return {ok:true, pending:0};
+  try { await shrinkQueuedPhotos(q); } catch(e) { console.error("Kompresi foto antrean:",e); }
   const remaining = [], conflicts = [];
   for (const op of q) {
     try {
