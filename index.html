@@ -6,7 +6,7 @@
 @media(max-width:620px){.side{display:none;position:fixed;top:60px;bottom:0;left:0;z-index:10;width:250px;overflow:auto;box-shadow:6px 0 20px #0002}.side.open{display:block}.main{padding:11px 8px}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.brand{font-size:12px}.stats{gap:7px}.stat{padding:10px}.stat strong{font-size:22px}}
 </style></head><body>
 <section id="login" class="login"><div class="card"><img id="loginLogo" class="logo" alt="Logo PMI"><h1>PMR MADYA BONERATE</h1><p>Sistem Manajemen Palang Merah Remaja (PMR) Madya SMPN Bonerate No. 6 Kepulauan Selayar</p><form id="loginForm"><div class="field"><label>Email Firebase (atau username saat offline)</label><input id="username" type="text" required autocomplete="username"></div><div class="field"><label>Kata Sandi</label><input id="password" type="password" required autocomplete="current-password"></div><button class="btn primary block">Masuk ke Aplikasi</button></form><p style="font-size:12px;background:#f7f8fa;padding:10px">Online: gunakan email dan kata sandi akun Firebase.<br>Offline: gunakan akun lokal yang tersimpan di perangkat.</p></div></section>
-<section id="app" class="hidden"><header class="top"><div class="brand"><button id="menu">☰</button><img id="topLogo" alt="Logo"><span>PMR MADYA BONERATE</span></div><div><span id="userLabel"></span> <button id="logout">Keluar</button></div></header><div class="layout"><aside class="side" id="side"><div class="navlabel">MENU UTAMA</div><button class="nav active" data-page="dashboard">🏠 Dashboard</button><button class="nav" data-page="anggota">👥 Data Anggota</button><button class="nav" data-page="kegiatan">📅 Kegiatan & Absensi</button><button class="nav" data-page="tatatertib">📜 Tata Tertib PMR</button><button class="nav" data-page="pengurus">👥 Profil Pengurus PMR</button><div class="navlabel">ADMINISTRASI</div><button class="nav" data-page="materi">📚 Materi PMR</button><button class="nav" data-page="program">🗂️ Program Kerja</button><button class="nav" data-page="inventaris">📦 Inventaris</button><button class="nav" data-page="pengumuman">📢 Pengumuman</button><div class="navlabel">PENGELOLAAN</div><button class="nav adminonly" data-page="pengguna">🔐 Manajemen Pengguna</button><button class="nav adminonly" data-page="backup">💾 Backup Data</button><button class="nav" data-page="profil">ℹ️ Profil Aplikasi</button></aside><main class="main"><div id="content"></div><div class="foot">PMR Madya Bonerate · Aplikasi offline</div></main></div></section><div id="modalRoot"></div><div id="toast" class="toast hidden"></div>
+<section id="app" class="hidden"><header class="top"><div class="brand"><button id="menu">☰</button><img id="topLogo" alt="Logo"><span>PMR MADYA BONERATE</span></div><div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end"><span id="userLabel"></span><span id="syncStatus" style="font-size:10px;border:1px solid #ffffff70;border-radius:12px;padding:4px 7px">Status: lokal</span> <button id="logout">Keluar</button></div></header><div class="layout"><aside class="side" id="side"><div class="navlabel">MENU UTAMA</div><button class="nav active" data-page="dashboard">🏠 Dashboard</button><button class="nav" data-page="anggota">👥 Data Anggota</button><button class="nav" data-page="kegiatan">📅 Kegiatan & Absensi</button><button class="nav" data-page="tatatertib">📜 Tata Tertib PMR</button><button class="nav" data-page="pengurus">👥 Profil Pengurus PMR</button><div class="navlabel">ADMINISTRASI</div><button class="nav" data-page="materi">📚 Materi PMR</button><button class="nav" data-page="program">🗂️ Program Kerja</button><button class="nav" data-page="inventaris">📦 Inventaris</button><button class="nav" data-page="pengumuman">📢 Pengumuman</button><div class="navlabel">PENGELOLAAN</div><button class="nav adminonly" data-page="pengguna">🔐 Manajemen Pengguna</button><button class="nav adminonly" data-page="backup">💾 Backup Data</button><button class="nav" data-page="profil">ℹ️ Profil Aplikasi</button></aside><main class="main"><div id="content"></div><div class="foot">PMR Madya Bonerate · Aplikasi offline</div></main></div></section><div id="modalRoot"></div><div id="toast" class="toast hidden"></div>
 <script>
 "use strict";
 const DBKEY="pmr_madya_bonerate_v2";
@@ -14,7 +14,7 @@ const defaults=()=>({users:[{id:1,username:"admin",password:"admin123",name:"Adm
 function clone(x){return JSON.parse(JSON.stringify(x))}
 function load(){try{let d=JSON.parse(localStorage.getItem(DBKEY)||"null");if(!d)return defaults();let def=defaults();Object.keys(def).forEach(k=>{if(d[k]==null)d[k]=clone(def[k])});return d}catch(e){return defaults()}}
 let db=load(),me=null,toastTimer;
-function save(){try{localStorage.setItem(DBKEY,JSON.stringify(db));if(window.pmrFirebaseQueueSync)window.pmrFirebaseQueueSync(db);return true}catch(e){toast("Penyimpanan penuh. Kurangi foto atau lakukan backup.");return false}}
+function save(){try{let previous=localStorage.getItem(DBKEY);localStorage.setItem(DBKEY,JSON.stringify(db));if(window.pmrRecordLocalChanges)window.pmrRecordLocalChanges(previous,db);if(window.pmrFirebaseQueueSync)window.pmrFirebaseQueueSync(db);return true}catch(e){toast("Penyimpanan lokal/antrean bermasalah. Segera ekspor backup sebelum melanjutkan.");return false}}
 function nextId(a){return a.reduce((m,x)=>Math.max(m,Number(x.id)||0),0)+1}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let e=document.getElementById("toast");e.textContent=s;e.classList.remove("hidden");clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.add("hidden"),2700)}
@@ -30,13 +30,56 @@ const passwordInput=document.getElementById("password");
 document.getElementById("loginForm").addEventListener("submit",async e=>{
   e.preventDefault();
   const u=usernameInput.value.trim(), p=passwordInput.value;
-  if(window.pmrFirebaseLogin){
-    const result=await window.pmrFirebaseLogin(u,p);
-    if(result==="success") return;
-    if(result==="offline") { login(u,p); return; }
+
+  // Akun lokal harus diperiksa terlebih dahulu, baik saat online maupun offline.
+  // Dengan demikian username seperti "admin" tidak dikirim ke Firebase sebagai email.
+  // Baca ulang penyimpanan lokal agar akun offline tidak bergantung pada
+  // data lama yang mungkin masih ada di memori halaman.
+  let localUser = Array.isArray(db.users)
+    ? db.users.find(a => String(a.username || "").trim().toLowerCase() === u.toLowerCase())
+    : null;
+  if (!localUser) {
+    try {
+      const stored = JSON.parse(localStorage.getItem(DBKEY) || "null");
+      if (stored && Array.isArray(stored.users)) {
+        db.users = stored.users;
+        localUser = stored.users.find(a => String(a.username || "").trim().toLowerCase() === u.toLowerCase()) || null;
+      }
+    } catch (err) { console.warn("Tidak dapat membaca akun lokal:", err); }
+  }
+  if (localUser) {
+    if (String(localUser.password ?? "") !== p) {
+      toast("Kata sandi akun lokal salah. Gunakan kata sandi yang tersimpan di perangkat ini.");
+      return;
+    }
+    // Gunakan objek akun yang baru dibaca agar login() menemukan kredensialnya.
+    if (!Array.isArray(db.users)) db.users = [];
+    if (!db.users.some(a => String(a.username || "").trim().toLowerCase() === u.toLowerCase())) db.users.push(localUser);
+    login(u, p);
+    if (me && String(me.username || "").toLowerCase() === u.toLowerCase()) {
+      if (typeof window.pmrUpdateSyncStatus === "function") window.pmrUpdateSyncStatus("Mode lokal · perubahan hanya tersimpan di perangkat ini sampai disinkronkan admin");
+    }
     return;
   }
-  login(u,p);
+
+  // Saat tidak ada internet, hanya akun lokal yang tersimpan di perangkat ini yang dapat dipakai.
+  if (!navigator.onLine) {
+    toast("Akun lokal tidak ditemukan di perangkat ini. Coba admin / admin123 atau anggota / pmr123 jika belum pernah diubah.");
+    return;
+  }
+
+  // Email yang bukan akun lokal diproses melalui Firebase seperti sebelumnya.
+  if (window.pmrFirebaseLogin) {
+    const result = await window.pmrFirebaseLogin(u, p);
+    if (result === "success") return;
+    if (result === "offline") {
+      toast("Firebase tidak tersedia. Masuk menggunakan username akun lokal yang tersimpan di perangkat ini.");
+      return;
+    }
+    return;
+  }
+
+  toast("Firebase belum siap. Gunakan username dan kata sandi akun lokal yang tersimpan di perangkat ini.");
 });
 document.getElementById("logout").onclick=()=>{
   if(window.pmrFirebaseSignOut) window.pmrFirebaseSignOut();
@@ -179,45 +222,116 @@ async function readCloudData() {
   // Existing classic script keeps db in memory; refresh it through a safe public hook.
   if (typeof window.pmrApplyCloudData === "function") window.pmrApplyCloudData(next);
 }
-async function writeCollection(localKey, cloudName, arr) {
-  const snap = await getDocs(collection(cloudDb, cloudName));
-  const wanted = new Map((arr || []).map(x => [String(x.id), x]));
-  for (const d of snap.docs) if (!wanted.has(String(d.id))) await deleteDoc(d.ref);
-  for (const x of (arr || [])) {
-    if (x.id == null) continue;
-    const data = { ...x };
-    await setDoc(doc(cloudDb, cloudName, String(x.id)), data);
+// Perubahan disimpan sebagai antrean lokal terpisah. Penghapusan hanya dikirim
+// jika ada tindakan hapus yang eksplisit dari aplikasi; tidak ada mirror/delete-all.
+const QUEUE_KEY = "pmr_madya_bonerate_sync_queue_v1";
+const singletonMap = { profile: ["profil_aplikasi", "utama"], tataTertib: ["tata_tertib", "utama"] };
+function stable(value) {
+  if (Array.isArray(value)) return "[" + value.map(stable).join(",") + "]";
+  if (value && typeof value === "object") return "{" + Object.keys(value).sort().map(k => JSON.stringify(k)+":"+stable(value[k])).join(",") + "}";
+  return JSON.stringify(value);
+}
+function readQueue() {
+  try { const q = JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]"); return Array.isArray(q) ? q : []; }
+  catch { return []; }
+}
+function writeQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
+function addQueueOp(q, op) {
+  const ix = q.findIndex(x => x.key === op.key);
+  if (ix >= 0) { op.base = q[ix].base; q[ix] = op; }
+  else q.push(op);
+}
+function recordDiff(before, after) {
+  const oldDb = before ? JSON.parse(before) : null;
+  if (!oldDb || !after) return;
+  const q = readQueue();
+  for (const [localKey, cloudName] of Object.entries(collectionsMap)) {
+    const oldArr = Array.isArray(oldDb[localKey]) ? oldDb[localKey] : [];
+    const newArr = Array.isArray(after[localKey]) ? after[localKey] : [];
+    const oldMap = new Map(oldArr.filter(x => x && x.id != null).map(x => [String(x.id), x]));
+    const newMap = new Map(newArr.filter(x => x && x.id != null).map(x => [String(x.id), x]));
+    for (const [id, item] of newMap) {
+      const base = oldMap.get(id) ?? null;
+      if (stable(base) !== stable(item)) addQueueOp(q, { key: cloudName+"/"+id, collection: cloudName, id, type: "set", base, data: item, changedAt: Date.now(), status: "pending" });
+    }
+    for (const [id, item] of oldMap) if (!newMap.has(id)) addQueueOp(q, { key: cloudName+"/"+id, collection: cloudName, id, type: "delete", base: item, data: null, changedAt: Date.now(), status: "pending" });
   }
+  for (const [localKey, pair] of Object.entries(singletonMap)) {
+    const base = oldDb[localKey] ?? null, data = after[localKey] ?? null;
+    if (stable(base) !== stable(data)) addQueueOp(q, { key: pair[0]+"/"+pair[1], collection: pair[0], id: pair[1], type: "set", base, data, changedAt: Date.now(), status: "pending" });
+  }
+  const oldAtt = oldDb.attendance || {}, newAtt = after.attendance || {};
+  for (const id of new Set([...Object.keys(oldAtt), ...Object.keys(newAtt)])) {
+    const base = oldAtt[id] ?? null, records = newAtt[id] ?? null;
+    if (stable(base) !== stable(records)) addQueueOp(q, { key: "absensi/"+id, collection: "absensi", id: String(id), type: records == null ? "delete" : "set", base: base == null ? null : {kegiatanId: String(id), records: base}, data: records == null ? null : {kegiatanId: String(id), records}, changedAt: Date.now(), status: "pending" });
+  }
+  writeQueue(q);
+}
+window.pmrRecordLocalChanges = (before, after) => {
+  try { recordDiff(before, after); updateSyncStatus(); } catch (e) { console.error("Catat antrean lokal:", e); }
+};
+function updateSyncStatus(message) {
+  const el = document.getElementById("syncStatus");
+  if (!el) return;
+  const pending = readQueue();
+  if (message) el.textContent = "Status: " + message;
+  else if (!navigator.onLine) el.textContent = "Status: Offline";
+  else if (pending.some(x => x.status === "conflict")) el.textContent = "Status: Konflik perlu ditinjau";
+  else if (pending.length) el.textContent = "Status: " + pending.length + " perubahan tertunda";
+  else if (!firebaseUser) el.textContent = navigator.onLine ? "Status: Lokal / belum login Firebase" : "Status: Offline";
+  else el.textContent = "Status: Online / tersinkron";
+}
+window.pmrUpdateSyncStatus = updateSyncStatus;
+function cloudDocData(snap) { return snap.exists() ? snap.data() : null; }
+async function flushQueue() {
+  if (!firebaseUser || role !== "admin" || !navigator.onLine) return {ok:false, pending:readQueue().length};
+  const q = readQueue();
+  if (!q.length) return {ok:true, pending:0};
+  const remaining = [], conflicts = [];
+  for (const op of q) {
+    try {
+      const ref = doc(cloudDb, op.collection, String(op.id));
+      const snap = await getDoc(ref);
+      const cloud = cloudDocData(snap);
+      // Compare with the value that existed when this change was first queued.
+      // If another device changed the same document, keep the operation pending.
+      if (stable(cloud) !== stable(op.base)) {
+        op.status = "conflict"; op.lastError = "Data Firebase berubah sejak perubahan lokal dibuat.";
+        remaining.push(op); conflicts.push(op.key); continue;
+      }
+      if (op.type === "delete") {
+        if (snap.exists()) await deleteDoc(ref);
+      } else {
+        await setDoc(ref, op.data || {});
+      }
+    } catch (e) {
+      op.status = "failed"; op.lastError = String(e?.message || e); remaining.push(op);
+    }
+  }
+  writeQueue(remaining);
+  if (conflicts.length) notify("Antrean tersimpan, tetapi ada "+conflicts.length+" konflik. Data tidak ditimpa; perlu diperiksa admin.");
+  else if (remaining.length) notify("Sebagian perubahan masih tertunda. Periksa koneksi dan Security Rules.");
+  else if (q.length) notify("Antrean perubahan berhasil disinkronkan ke Firebase.");
+  updateSyncStatus();
+  return {ok:remaining.length===0, pending:remaining.length, conflicts};
 }
 async function syncAll(data) {
-  if (!firebaseUser || role !== "admin" || syncBusy) return;
-  syncBusy = true;
-  try {
-    for (const [localKey, cloudName] of Object.entries(collectionsMap)) {
-      await writeCollection(localKey, cloudName, data[localKey] || []);
-    }
-    await setDoc(doc(cloudDb, "profil_aplikasi", "utama"), data.profile || {});
-    await setDoc(doc(cloudDb, "tata_tertib", "utama"), data.tataTertib || {});
-    const att = data.attendance || {};
-    const ids = new Set(Object.keys(att));
-    const snap = await getDocs(collection(cloudDb, "absensi"));
-    for (const d of snap.docs) if (!ids.has(String(d.data().kegiatanId))) await deleteDoc(d.ref);
-    for (const [kegiatanId, records] of Object.entries(att)) {
-      await setDoc(doc(cloudDb, "absensi", String(kegiatanId)), { kegiatanId, records });
-    }
-    lastCloudWrite = Date.now();
-    notify("Data lokal tersimpan. Sinkronisasi Firebase berhasil.");
-  } catch (e) {
-    console.error("Firebase sync:", e);
-    notify("Data tersimpan lokal, tetapi sinkronisasi Firebase gagal. Periksa koneksi dan Security Rules.");
-  } finally { syncBusy = false; }
+  // Tidak lagi menyamakan seluruh perangkat dengan Firebase dan tidak menghapus
+  // dokumen hanya karena tidak ada dalam array lokal. Hanya kirim perubahan antrean.
+  return flushQueue();
 }
-window.pmrFirebaseQueueSync = data => {
+window.pmrFirebaseQueueSync = () => {
   if (!firebaseUser || role !== "admin") return;
-  // Debounce multiple local save events; keep app usable offline.
   clearTimeout(window.__pmrSyncTimer);
-  window.__pmrSyncTimer = setTimeout(() => syncAll(data), 900);
+  window.__pmrSyncTimer = setTimeout(() => syncAll(), 900);
 };
+window.pmrFirebaseSyncPending = flushQueue;
+window.addEventListener("online", () => {
+  updateSyncStatus();
+  if (firebaseUser && role === "admin") syncAll();
+});
+window.addEventListener("offline", () => updateSyncStatus());
+updateSyncStatus();
 
 
 window.pmrFirebaseLogin = async (email, password) => {
@@ -243,24 +357,21 @@ window.pmrFirebaseLogin = async (email, password) => {
       notify("Peran akun tidak valid.");
       return "failed";
     }
-    // Members are view-only. Pull only collections allowed by current rules.
+    // Admin: send queued offline edits first, with per-document conflict checks.
+    // Never replace local state from cloud while queued edits are waiting.
     try {
-      await readCloudData();
-      if (role === "admin") {
-        const local = localDB();
-        const hasLocalData = ["anggota","kegiatan","materi","program","inventaris","pengumuman","pengurus"].some(k => Array.isArray(local[k]) && local[k].length)
-          || !!(local.profile && local.profile.logo) || !!(local.tataTertib && local.tataTertib.isi);
-        const mainNames = ["anggota","kegiatan","materi","program_kerja","inventaris","pengumuman","profil_pengurus"];
-        let cloudHasData = false;
-        for (const name of mainNames) {
-          const ss = await getDocs(collection(cloudDb, name));
-          if (!ss.empty) { cloudHasData = true; break; }
-        }
-        if (hasLocalData && !cloudHasData && confirm("Database Firebase masih kosong. Unggah data lokal HP admin ke Firebase sebagai data awal? Pastikan HP ini adalah sumber data utama.")) {
-          await syncAll(local);
-          await readCloudData();
-        }
+      let queuePending = false;
+      if (role === "admin" && readQueue().length) {
+        const queueResult = await flushQueue();
+        queuePending = queueResult.pending > 0;
       }
+      if (!queuePending) {
+        await readCloudData();
+      } else {
+        // Keep the local copy visible while queued changes/conflicts are unresolved.
+        notify("Data lokal dipertahankan karena masih ada perubahan tertunda. Periksa status sinkronisasi sebelum mengedit data yang sama.");
+      }
+      updateSyncStatus();
     } catch (e) {
       console.error("Cloud data load:", e);
       notify("Login berhasil, tetapi sebagian data belum dapat dimuat. Periksa koleksi dan Security Rules.");
