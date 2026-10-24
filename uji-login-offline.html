@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#a71930"><title>PMR MADYA BONERATE — Perbaikan Login Offline v2</title>
+<style>
+:root{--r:#a71930;--bg:#f4f6f9;--line:#e1e5eb;--muted:#687386}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#202938;font:14px Arial,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}.login{min-height:100vh;display:grid;place-items:center;padding:18px;background:linear-gradient(140deg,#7f1023,#c52b42)}.card{background:#fff;border-radius:16px;padding:22px;width:100%;max-width:430px}.login h1{text-align:center;color:var(--r);font-size:22px}.login p{text-align:center;line-height:1.5;color:var(--muted)}.logo{width:95px;height:95px;object-fit:contain;display:block;margin:auto}.field{margin:12px 0}.field label{display:block;font-weight:bold;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:white}.field textarea{min-height:90px}.btn{border:0;border-radius:8px;padding:9px 12px;background:#e9edf3;color:#263244;font-weight:bold}.primary{background:var(--r);color:white}.danger{background:#ffebee;color:#a71930}.blue{background:#e6f0ff;color:#205ca3}.green{background:#e2f7ed;color:#087447}.block{width:100%}.top{height:60px;background:var(--r);color:white;display:flex;align-items:center;justify-content:space-between;padding:0 12px;position:sticky;top:0;z-index:5;gap:8px}.brand{display:flex;align-items:center;gap:8px;font-weight:bold}.brand img{width:34px;height:34px;background:white;border-radius:50%;object-fit:contain}.top button{background:#ffffff20;color:white;border:1px solid #ffffff55;border-radius:7px;padding:7px}.layout{display:flex;min-height:calc(100vh - 60px)}.side{width:225px;background:white;border-right:1px solid var(--line);padding:10px;flex-shrink:0}.nav{display:block;width:100%;text-align:left;border:0;background:transparent;padding:11px;border-radius:8px;margin:2px 0;color:#465163}.nav.active,.nav:hover{background:#fff0f2;color:var(--r);font-weight:bold}.navlabel{font-size:10px;color:var(--muted);font-weight:bold;padding:12px 8px 5px;letter-spacing:1px}.main{flex:1;min-width:0;padding:18px}.head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:18px}.head h2{margin:0 0 5px}.head p{margin:0;color:var(--muted)}.panel{background:white;border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:15px;min-width:0}.ph{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}.ph h3,.panel h3{margin:0 0 12px}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:15px}.stat{background:white;border:1px solid var(--line);border-radius:10px;padding:13px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:26px;margin-top:8px}.quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.quick button{background:white;border:1px solid var(--line);border-radius:10px;padding:13px;text-align:left}.quick span{display:block;font-size:23px;margin-bottom:7px}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:560px}th,td{text-align:left;padding:10px;border-bottom:1px solid #edf0f4;vertical-align:top;line-height:1.4}th{background:#f8f9fb;color:#596477;font-size:11px;text-transform:uppercase}td{font-size:13px}.search{padding:9px;border:1px solid var(--line);border-radius:8px;max-width:220px;width:100%}.actions{display:flex;gap:4px;flex-wrap:wrap}.small{font-size:11px;padding:6px 8px}.badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#eef1f5;font-size:11px;font-weight:bold}.badge.green{background:#e2f7ed;color:#087447}.badge.red{background:#ffebee;color:#a71930}.empty{text-align:center;padding:22px;color:var(--muted)}.notice{background:#fff4df;color:#86520b;padding:12px;border-radius:8px;margin-bottom:12px;line-height:1.5}.success{background:#e2f7ed;color:#087447;padding:12px;border-radius:8px}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}.full{grid-column:1/-1}.formactions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}.modalbg{position:fixed;inset:0;background:#0008;z-index:20;display:grid;place-items:center;padding:12px}.modal{background:white;border-radius:13px;padding:17px;width:100%;max-width:650px;max-height:92vh;overflow:auto}.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.mh h3{margin:0}.avatar{width:80px;height:80px;object-fit:cover;border:1px solid var(--line);border-radius:9px}.profile-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eee}.grow{flex:1}.toast{position:fixed;z-index:50;bottom:18px;left:50%;transform:translateX(-50%);background:#202938;color:white;padding:12px 17px;border-radius:8px;max-width:90%}.foot{text-align:center;color:var(--muted);font-size:11px;padding:20px}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.quick{grid-template-columns:repeat(2,minmax(0,1fr))}.side{width:190px}}
+@media(max-width:620px){.side{display:none;position:fixed;top:60px;bottom:0;left:0;z-index:10;width:250px;overflow:auto;box-shadow:6px 0 20px #0002}.side.open{display:block}.main{padding:11px 8px}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.brand{font-size:12px}.stats{gap:7px}.stat{padding:10px}.stat strong{font-size:22px}}
+</style></head><body>
+<section id="login" class="login"><div class="card"><img id="loginLogo" class="logo" alt="Logo PMI"><h1>PMR MADYA BONERATE</h1><p>Sistem Manajemen Palang Merah Remaja (PMR) Madya SMPN Bonerate No. 6 Kepulauan Selayar</p><form id="loginForm"><div class="field"><label>Email Firebase (atau username saat offline)</label><input id="username" type="text" required autocomplete="username"></div><div class="field"><label>Kata Sandi</label><input id="password" type="password" required autocomplete="current-password"></div><button class="btn primary block">Masuk ke Aplikasi</button></form><p style="font-size:12px;background:#f7f8fa;padding:10px">Online: gunakan email dan kata sandi akun Firebase.<br>Offline: gunakan akun lokal yang tersimpan di perangkat.</p></div></section>
+<section id="app" class="hidden"><header class="top"><div class="brand"><button id="menu">☰</button><img id="topLogo" alt="Logo"><span>PMR MADYA BONERATE</span></div><div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end"><span id="userLabel"></span><span id="syncStatus" style="font-size:10px;border:1px solid #ffffff70;border-radius:12px;padding:4px 7px">Status: lokal</span> <button id="logout">Keluar</button></div></header><div class="layout"><aside class="side" id="side"><div class="navlabel">MENU UTAMA</div><button class="nav active" data-page="dashboard">🏠 Dashboard</button><button class="nav" data-page="anggota">👥 Data Anggota</button><button class="nav" data-page="kegiatan">📅 Kegiatan & Absensi</button><button class="nav" data-page="tatatertib">📜 Tata Tertib PMR</button><button class="nav" data-page="pengurus">👥 Profil Pengurus PMR</button><div class="navlabel">ADMINISTRASI</div><button class="nav" data-page="materi">📚 Materi PMR</button><button class="nav" data-page="program">🗂️ Program Kerja</button><button class="nav" data-page="inventaris">📦 Inventaris</button><button class="nav" data-page="pengumuman">📢 Pengumuman</button><div class="navlabel">PENGELOLAAN</div><button class="nav adminonly" data-page="pengguna">🔐 Manajemen Pengguna</button><button class="nav adminonly" data-page="backup">💾 Backup Data</button><button class="nav" data-page="profil">ℹ️ Profil Aplikasi</button></aside><main class="main"><div id="content"></div><div class="foot">PMR Madya Bonerate · Aplikasi offline · Uji Login v2</div></main></div></section><div id="modalRoot"></div><div id="toast" class="toast hidden"></div>
+<script>
+"use strict";
+const DBKEY="pmr_madya_bonerate_v2";
+const defaults=()=>({users:[{id:1,username:"admin",password:"admin123",name:"Administrator",role:"admin"},{id:2,username:"anggota",password:"pmr123",name:"Anggota PMR",role:"anggota"}],anggota:[],kegiatan:[],materi:[],program:[],inventaris:[],pengumuman:[],attendance:{},profile:{name:"PMR MADYA BONERATE",logo:""},tataTertib:{judul:"Tata Tertib PMR Madya Bonerate",isi:"Admin dapat mengisi tata tertib melalui formulir di bawah."},pengurus:[]});
+function clone(x){return JSON.parse(JSON.stringify(x))}
+function load(){try{let d=JSON.parse(localStorage.getItem(DBKEY)||"null");if(!d)return defaults();let def=defaults();Object.keys(def).forEach(k=>{if(d[k]==null)d[k]=clone(def[k])});return d}catch(e){return defaults()}}
+let db=load(),me=null,toastTimer;
+function save(){try{let previous=localStorage.getItem(DBKEY);localStorage.setItem(DBKEY,JSON.stringify(db));if(window.pmrRecordLocalChanges)window.pmrRecordLocalChanges(previous,db);if(window.pmrFirebaseQueueSync)window.pmrFirebaseQueueSync(db);return true}catch(e){toast("Penyimpanan lokal/antrean bermasalah. Segera ekspor backup sebelum melanjutkan.");return false}}
+function nextId(a){return a.reduce((m,x)=>Math.max(m,Number(x.id)||0),0)+1}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function toast(s){let e=document.getElementById("toast");e.textContent=s;e.classList.remove("hidden");clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.add("hidden"),2700)}
+function isAdmin(){return !!me&&me.role==="admin"}
+function adminOnly(){if(!isAdmin()){toast("Fitur ini hanya untuk Admin.");return false}return true}
+function dateFmt(v){if(!v)return "-";let d=new Date(v+"T00:00:00");return isNaN(d)?esc(v):d.toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"})}
+function today(){let d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
+function defaultLogo(){return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><rect width="180" height="180" fill="white"/><path d="M70 18H110V65H157V105H110V152H70V105H23V65H70Z" fill="#d71920"/></svg>')}
+function setLogo(){let src=db.profile.logo||defaultLogo();document.getElementById("loginLogo").src=src;document.getElementById("topLogo").src=src}
+function login(u,p){let x=db.users.find(a=>a.username.toLowerCase()===u.trim().toLowerCase()&&a.password===p);if(!x)return toast("Username atau kata sandi salah.");me=x;document.getElementById("login").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("userLabel").textContent=x.name;document.querySelectorAll(".adminonly").forEach(b=>b.classList.toggle("hidden",!isAdmin()));render("dashboard");toast("Selamat datang, "+x.name)}
+const usernameInput=document.getElementById("username");
+const passwordInput=document.getElementById("password");
+document.getElementById("loginForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const u=usernameInput.value.trim(), p=passwordInput.value;
+
+  // Akun lokal harus diperiksa terlebih dahulu, baik saat online maupun offline.
+  // Dengan demikian username seperti "admin" tidak dikirim ke Firebase sebagai email.
+  // Baca ulang penyimpanan lokal agar akun offline tidak bergantung pada
+  // data lama yang mungkin masih ada di memori halaman.
+  let localUser = Array.isArray(db.users)
+    ? db.users.find(a => String(a.username || "").trim().toLowerCase() === u.toLowerCase())
+    : null;
+  if (!localUser) {
+    try {
+      const stored = JSON.parse(localStorage.getItem(DBKEY) || "null");
+      if (stored && Array.isArray(stored.users)) {
+        db.users = stored.users;
+        localUser = stored.users.find(a => String(a.username || "").trim().toLowerCase() === u.toLowerCase()) || null;
+      }
+    } catch (err) { console.warn("Tidak dapat membaca akun lokal:", err); }
+  }
+  if (localUser) {
+    if (String(localUser.password ?? "") !== p) {
+      toast("Kata sandi akun lokal salah. Gunakan kata sandi yang tersimpan di perangkat ini.");
+      return;
+    }
+    // Gunakan objek akun yang baru dibaca agar login() menemukan kredensialnya.
+    if (!Array.isArray(db.users)) db.users = [];
+    if (!db.users.some(a => String(a.username || "").trim().toLowerCase() === u.toLowerCase())) db.users.push(localUser);
+    login(u, p);
+    if (me && String(me.username || "").toLowerCase() === u.toLowerCase()) {
+      if (typeof window.pmrUpdateSyncStatus === "function") window.pmrUpdateSyncStatus("Mode lokal · perubahan hanya tersimpan di perangkat ini sampai disinkronkan admin");
+    }
+    return;
+  }
+
+  // Saat tidak ada internet, hanya akun lokal yang tersimpan di perangkat ini yang dapat dipakai.
+  if (!navigator.onLine) {
+    toast("Akun lokal tidak ditemukan di perangkat ini. Coba admin / admin123 atau anggota / pmr123 jika belum pernah diubah.");
+    return;
+  }
+
+  // Email yang bukan akun lokal diproses melalui Firebase seperti sebelumnya.
+  if (window.pmrFirebaseLogin) {
+    const result = await window.pmrFirebaseLogin(u, p);
+    if (result === "success") return;
+    if (result === "offline") {
+      toast("Firebase tidak tersedia. Masuk menggunakan username akun lokal yang tersimpan di perangkat ini.");
+      return;
+    }
+    return;
+  }
+
+  toast("Firebase belum siap. Gunakan username dan kata sandi akun lokal yang tersimpan di perangkat ini.");
+});
+document.getElementById("logout").onclick=()=>{
+  if(window.pmrFirebaseSignOut) window.pmrFirebaseSignOut();
+  me=null;
+  document.getElementById("app").classList.add("hidden");
+  document.getElementById("login").classList.remove("hidden");
+  passwordInput.value="";
+};
+document.getElementById("menu").onclick=()=>document.getElementById("side").classList.toggle("open");
+const jobs=["Ketua PMR","Wakil Ketua PMR","Sekretaris","Bendahara","Koordinator Seksi Keterampilan Hidup Sehat","Anggota Seksi Keterampilan Hidup Sehat","Koordinator Seksi Berkarya dan Berbakti","Anggota Seksi Berkarya dan Berbakti","Koordinator Seksi Persahabatan","Anggota Seksi Persahabatan","Koordinator Seksi SDM dan Umum","Anggota Seksi SDM dan Umum","Kepala Markas","Staf Bidang Logistik","Staf Bidang Pendataan dan Administrasi","Staf Bidang Pengembangan SDM","Staf Bidang Promosi dan Publikasi","Penanggung Jawab PMR","Pembina PMR","Pelatih PMR"];
+const cfg={
+anggota:{title:"Data Anggota",one:"Anggota",list:"anggota",fields:[["nama","Nama Lengkap","text",1],["nomor","Nomor Anggota"],["nik","Nomor Induk Keluarga (NIK)"],["jenisKelamin","Jenis Kelamin","select",0,["Laki-laki","Perempuan"]],["golonganDarah","Golongan Darah","select",0,["A","B","AB","O","Tidak Diketahui"]],["kelas","Kelas"],["tanggalLahir","Tanggal Lahir","date"],["tanggalMasuk","Tanggal Masuk di PMR","date"],["angkatan","Angkatan"],["email","E-mail","email"],["namaOrangTua","Nama Orang Tua"],["telepon","No. HP"],["alamat","Alamat","textarea"],["jabatan","Jabatan","select",0,["Anggota",...jobs.slice(0,12)]],["status","Status","select",0,["Aktif","Tidak Aktif","Alumni"]],["foto","Foto Anggota (JPG/PNG maksimal 1 MB)","file"]],cols:[["foto","Foto"],["nomor","Nomor Anggota"],["nama","Nama"],["kelas","Kelas"],["angkatan","Angkatan"],["telepon","No. HP"],["jabatan","Jabatan"],["status","Status"]]},
+kegiatan:{title:"Kegiatan & Absensi",one:"Kegiatan",list:"kegiatan",fields:[["nama","Nama Kegiatan","text",1],["tanggal","Tanggal","date",1],["waktu","Waktu"],["lokasi","Lokasi"],["penanggungJawab","Penanggung Jawab"],["keterangan","Keterangan","textarea"]],cols:[["tanggal","Tanggal"],["nama","Kegiatan"],["waktu","Waktu"],["lokasi","Lokasi"],["penanggungJawab","Penanggung Jawab"]]},
+materi:{title:"Materi PMR",one:"Materi",list:"materi",fields:[["judul","Judul Materi","text",1],["kategori","Kategori","select",1,["Gerakan","Kepemimpinan","Pertolongan Pertama","Kesehatan Remaja","Remaja Sehat Peduli Sesama","Donor Darah","Ayo Siaga Bencana"]],["isiPdf","File Isi Materi (PDF)","pdf",1]],cols:[["judul","Judul Materi"],["kategori","Kategori"],["isiPdf","Isi Materi (PDF)"]]},
+program:{title:"Program Kerja",one:"Program Kerja",list:"program",fields:[["nama","Nama Program","text",1],["bidang","Bidang","select",0,["Keterampilan Hidup Sehat","Berkarya dan Berbakti","Persahabatan","SDM dan Umum"]],["mulai","Tanggal Mulai","date"],["selesai","Tanggal Selesai","date"],["penanggungJawab","Penanggung Jawab"],["status","Status","select",0,["Rencana","Berjalan","Selesai","Ditunda"]],["keterangan","Keterangan","textarea"]],cols:[["nama","Program"],["bidang","Bidang"],["mulai","Mulai"],["selesai","Selesai"],["status","Status"]]},
+inventaris:{title:"Inventaris",one:"Barang",list:"inventaris",fields:[["nama","Nama Barang","text",1],["kategori","Kategori","select",0,["Pertolongan Pertama","Peralatan Kegiatan","Seragam","Perkemahan","Administrasi","Lainnya"]],["jumlah","Jumlah","number",1],["satuan","Satuan"],["kondisi","Kondisi","select",0,["Baik","Rusak Ringan","Rusak Berat"]],["lokasi","Lokasi Penyimpanan"],["keterangan","Keterangan","textarea"]],cols:[["nama","Nama Barang"],["kategori","Kategori"],["jumlah","Jumlah"],["satuan","Satuan"],["kondisi","Kondisi"],["lokasi","Lokasi"]]},
+pengumuman:{title:"Pengumuman",one:"Pengumuman",list:"pengumuman",fields:[["judul","Judul","text",1],["tanggal","Tanggal","date",1],["isi","Isi Pengumuman","textarea",1],["pembuat","Dibuat Oleh"]],cols:[["tanggal","Tanggal"],["judul","Judul"],["isi","Isi Pengumuman"]]}
+};
+function render(p){if(["backup","pengguna"].includes(p)&&!isAdmin()){toast("Menu khusus Admin.");p="dashboard"}document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.page===p));document.getElementById("side").classList.remove("open");let c=document.getElementById("content");let titles={dashboard:"Dashboard",tatatertib:"Tata Tertib PMR",pengurus:"Profil Pengurus PMR",profil:"Profil Aplikasi",backup:"Backup Data",pengguna:"Manajemen Pengguna"};c.innerHTML='<div class="head"><div><h2>'+esc(cfg[p]?.title||titles[p]||p)+'</h2><p>PMR Madya Bonerate · SMPN Bonerate No. 6 Kepulauan Selayar</p></div></div>';if(cfg[p])return collectionPage(c,p);if(p==="dashboard")return dashboard(c);if(p==="tatatertib")return rulesPage(c);if(p==="pengurus")return boardPage(c);if(p==="profil")return profilePage(c);if(p==="backup")return backupPage(c);if(p==="pengguna")return usersPage(c)}
+document.getElementById("side").addEventListener("click",e=>{let b=e.target.closest("[data-page]");if(b)render(b.dataset.page)});
+function stat(i,l,n){return '<div class="stat"><small>'+i+' '+l+'</small><strong>'+n+'</strong></div>'}
+function dashboard(c){c.innerHTML+='<div class="stats">'+stat("👥","Anggota",db.anggota.length)+stat("📅","Kegiatan",db.kegiatan.length)+stat("📚","Materi",db.materi.length)+stat("📦","Inventaris",db.inventaris.length)+'</div><div class="panel"><h3>Akses Cepat</h3><div class="quick">'+[['anggota','👥','Data Anggota'],['kegiatan','📅','Kegiatan & Absensi'],['tatatertib','📜','Tata Tertib'],['pengurus','👥','Profil Pengurus'],['materi','📚','Materi PMR'],['program','🗂️','Program Kerja'],['inventaris','📦','Inventaris'],['pengumuman','📢','Pengumuman']].map(a=>'<button data-page="'+a[0]+'"><span>'+a[1]+'</span><b>'+a[2]+'</b></button>').join("")+'</div></div>'}
+function collectionPage(c,k,q=""){let z=cfg[k],items=db[z.list].filter(x=>!q||Object.values(x).some(v=>String(v??"").toLowerCase().includes(q.toLowerCase())));let h=k==="kegiatan"?'<div class="notice">Admin dapat mengisi absensi. Anggota hanya dapat melihat rekap kehadiran.</div>':"";h+='<div class="panel"><div class="ph"><h3>'+z.title+' ('+items.length+')</h3><input id="searchBox" class="search" placeholder="Cari data..." value="'+esc(q)+'">'+(isAdmin()?'<button class="btn primary" data-act="add" data-key="'+k+'">＋ Tambah</button>':"")+'</div><div class="tablewrap"><table><thead><tr>'+z.cols.map(a=>'<th>'+a[1]+'</th>').join("")+'<th>Aksi</th></tr></thead><tbody>';h+=items.length?items.map(x=>{let cells=z.cols.map(a=>{let v=x[a[0]];if(["tanggal","tanggalLahir","tanggalMasuk","mulai","selesai"].includes(a[0]))v=dateFmt(v);if(a[0]==="foto")return '<td>'+(x.foto?'<img class="avatar" src="'+x.foto+'">':"-")+'</td>';if(a[0]==="isiPdf")return '<td>'+(x.isiPdf?'<button class="btn blue small" data-act="view-pdf" data-id="'+x.id+'">📄 Lihat PDF</button>':"-")+'</td>';return '<td>'+esc(v||"-")+'</td>'}).join("");let act="";if(isAdmin())act='<button class="btn blue small" data-act="view" data-key="'+k+'" data-id="'+x.id+'">Lihat</button> <button class="btn small" data-act="edit" data-key="'+k+'" data-id="'+x.id+'">Edit</button> '+(k==="kegiatan"?'<button class="btn green small" data-act="attendance" data-id="'+x.id+'">Absensi</button>':"")+' <button class="btn danger small" data-act="delete" data-key="'+k+'" data-id="'+x.id+'">Hapus</button>';else if(k==="kegiatan")act='<button class="btn green small" data-act="attendance" data-id="'+x.id+'">Lihat Absensi</button>';return '<tr>'+cells+'<td>'+act+'</td></tr>'}).join(""):'<tr><td colspan="'+(z.cols.length+1)+'"><div class="empty">Belum ada data.</div></td></tr>';h+='</tbody></table></div></div>';c.innerHTML+=h;let s=document.getElementById("searchBox");s.addEventListener("input",()=>{let v=s.value,head=c.querySelector(".head").outerHTML;c.innerHTML=head;collectionPage(c,k,v);let ns=document.getElementById("searchBox");ns.focus();ns.setSelectionRange(v.length,v.length)})}
+function modal(title,body,submit){let r=document.getElementById("modalRoot");r.innerHTML='<div class="modalbg" id="mbg"><div class="modal"><div class="mh"><h3>'+esc(title)+'</h3><button class="btn" data-close>✕</button></div>'+body+'</div></div>';r.querySelector("[data-close]").onclick=closeModal;r.querySelector("#mbg").onclick=e=>{if(e.target.id==="mbg")closeModal()};r.querySelectorAll("[data-close]").forEach(b=>b.onclick=closeModal);let f=r.querySelector("form");if(f&&submit)f.addEventListener("submit",e=>{e.preventDefault();submit(f)})}
+function closeModal(){document.getElementById("modalRoot").innerHTML=""}
+function field(f,v){let [k,l,t="text",req,opts]=f,id="f_"+k,lab='<label for="'+id+'">'+l+(req?" *":"")+'</label>',x="";if(t==="pdf")x='<input id="'+id+'" name="'+k+'" type="file" accept="application/pdf,.pdf"'+(req&&!v?" required":"")+'>'+(v?'<p><span class="badge green">PDF tersimpan</span> Pilih file baru jika ingin mengganti.</p>':'<p class="notice">Unggah file PDF agar anggota dapat membacanya langsung.</p>');else if(t==="select")x='<select id="'+id+'" name="'+k+'"'+(req?" required":"")+'><option value="">-- Pilih --</option>'+opts.map(o=>'<option value="'+esc(o)+'"'+(v===o?" selected":"")+'>'+esc(o)+'</option>').join("")+'</select>';else if(t==="textarea")x='<textarea id="'+id+'" name="'+k+'"'+(req?" required":"")+'>'+esc(v||"")+'</textarea>';else if(t==="file")x='<input id="'+id+'" name="'+k+'" type="file" accept="image/jpeg,image/png">';else x='<input id="'+id+'" name="'+k+'" type="'+t+'" value="'+esc(v||"")+'"'+(req?" required":"")+'>';return '<div class="field '+(t==="textarea"?"full":"")+'">'+lab+x+'</div>'}
+function readImg(file){return new Promise((res,rej)=>{let r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
+async function getPhoto(input,old){let f=input?.files?.[0];if(!f)return old||"";if(!["image/jpeg","image/png"].includes(f.type))throw Error("Foto hanya JPG/JPEG atau PNG.");if(f.size>1048576)throw Error("Ukuran foto maksimal 1 MB.");return readImg(f)}
+function formRecord(k,item){if(!adminOnly())return;let z=cfg[k],body='<form><div class="formgrid">'+z.fields.map(f=>field(f,item?item[f[0]]:(f[0]==="status"&&k==="anggota"?"Aktif":f[0]==="status"&&k==="program"?"Rencana":""))).join("")+'</div>'+(item?.foto?'<img class="avatar" src="'+item.foto+'">':"")+'<div class="formactions"><button type="button" class="btn" data-close>Batal</button><button class="btn primary">Simpan</button></div></form>';modal((item?"Edit ":"Tambah ")+z.one,body,async f=>{if(!adminOnly())return;let d={};try{for(let a of z.fields){let [key,label,type="text",req]=a,el=f.elements[key];if(type==="file")d.foto=await getPhoto(el,item?.foto);else if(type==="pdf"){let file=el.files?.[0];if(file){if(file.type!=="application/pdf"&&!file.name.toLowerCase().endsWith(".pdf"))return toast("Isi Materi harus berupa file PDF.");if(file.size>5*1024*1024)return toast("Ukuran PDF maksimal 5 MB.");d[key]=await readImg(file);d[key+"Nama"]=file.name}else{d[key]=item?.[key]||"";d[key+"Nama"]=item?.[key+"Nama"]||"";if(req&&!d[key])return toast("Silakan unggah file PDF.")}}else{d[key]=el.value.trim();if(req&&!d[key])return toast("Kolom "+label+" wajib diisi.")}}}catch(e){return toast(e.message)}if(d.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email))return toast("Format e-mail tidak valid.");if(k==="inventaris")d.jumlah=Number(d.jumlah||0);if(k==="pengumuman"&&!d.pembuat)d.pembuat=me.name;if(item)Object.assign(item,d);else{d.id=nextId(db[z.list]);db[z.list].push(d)}if(save()){closeModal();render(k);toast("Data tersimpan.")}})}
+function viewRecord(k,id){if(!adminOnly())return;let z=cfg[k],x=db[z.list].find(a=>a.id===id);if(!x)return;let body='<table><tbody>'+z.fields.map(f=>'<tr><th>'+esc(f[1])+'</th><td>'+(f[0]==="foto"&&x.foto?'<img class="avatar" src="'+x.foto+'">':f[0]==="isiPdf"&&x.isiPdf?'<button class="btn blue" data-act="view-pdf" data-id="'+x.id+'">📄 Buka PDF</button> '+esc(x.isiPdfNama||"File PDF"):esc(["tanggal","tanggalLahir","tanggalMasuk","mulai","selesai"].includes(f[0])?dateFmt(x[f[0]]):x[f[0]]||"-"))+'</td></tr>').join("")+'</tbody></table><div class="formactions"><button class="btn primary" data-close>Tutup</button></div>';modal("Detail "+z.one,body)}
+function delRecord(k,id){if(!adminOnly()||!confirm("Hapus data ini?"))return;db[cfg[k].list]=db[cfg[k].list].filter(x=>x.id!==id);if(k==="kegiatan")delete db.attendance[id];save();render(k)}
+function attendance(id){let a=db.kegiatan.find(x=>x.id===id);if(!a)return;if(!isAdmin())return viewAttendance(id);let rec=db.attendance[id]||{},members=[...db.anggota].sort((a,b)=>(a.nama||"").localeCompare(b.nama||"")),st=["Hadir","Izin","Sakit","Alpa"];let body='<p><b>'+esc(a.nama)+'</b> · '+dateFmt(a.tanggal)+'</p><form><div class="tablewrap"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Status</th></tr></thead><tbody>'+members.map(m=>'<tr><td>'+esc(m.nama)+'</td><td>'+esc(m.kelas||"-")+'</td><td><select name="m'+m.id+'">'+st.map(s=>'<option'+((rec[m.id]||"Alpa")===s?" selected":"")+'>'+s+'</option>').join("")+'</select></td></tr>').join("")+'</tbody></table></div><div class="formactions"><button type="button" class="btn" data-close>Batal</button><button class="btn primary">Simpan Absensi</button></div></form>';modal("Absensi Kegiatan",body,f=>{if(!adminOnly())return;let n={};members.forEach(m=>n[m.id]=f.elements["m"+m.id]?.value||"Alpa");db.attendance[id]=n;if(save()){closeModal();render("kegiatan");toast("Absensi tersimpan.")}})}
+function viewAttendance(id){let a=db.kegiatan.find(x=>x.id===id);if(!a)return;let r=db.attendance[id]||{},m=db.anggota,st=["Hadir","Izin","Sakit","Alpa"];let body='<p><b>'+esc(a.nama)+'</b><br>'+dateFmt(a.tanggal)+'</p><div class="stats">'+st.map(s=>stat("📋",s,m.filter(x=>(r[x.id]||"Belum Diisi")===s).length)).join("")+'</div><div class="tablewrap"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Status</th></tr></thead><tbody>'+m.map(x=>'<tr><td>'+esc(x.nama)+'</td><td>'+esc(x.kelas||"-")+'</td><td>'+esc(r[x.id]||"Belum Diisi")+'</td></tr>').join("")+'</tbody></table></div><div class="formactions"><button class="btn primary" data-close>Tutup</button></div>';modal("Rekap Absensi (Lihat Saja)",body)}
+function rulesPage(c){let t=db.tataTertib;c.innerHTML+='<div class="panel"><h3>'+esc(t.judul)+'</h3><div style="white-space:pre-wrap;line-height:1.8">'+esc(t.isi)+'</div>'+(isAdmin()?'<hr><form id="rulesForm"><div class="field"><label>Judul</label><input name="judul" required value="'+esc(t.judul)+'"></div><div class="field"><label>Isi Tata Tertib</label><textarea name="isi" required style="min-height:260px">'+esc(t.isi)+'</textarea></div><button class="btn primary">Simpan Tata Tertib</button></form>':"")+'</div>';let f=document.getElementById("rulesForm");if(f)f.onsubmit=e=>{e.preventDefault();if(!adminOnly())return;db.tataTertib={judul:f.elements.judul.value.trim(),isi:f.elements.isi.value.trim()};if(save()){render("tatatertib");toast("Tata tertib disimpan.")}}}
+function boardPage(c){let groups=[["Pengurus Organisasi",jobs.slice(0,12)],["Pengurus Markas",jobs.slice(12,17)],["Penanggung Jawab, Pembina dan Pelatih",jobs.slice(17)]];c.innerHTML+='<div class="panel"><div class="ph"><h3>Profil Pengurus PMR</h3>'+(isAdmin()?'<button class="btn primary" data-act="add-board">＋ Tambah Profil</button>':"")+'</div><p>Nama, jabatan, dan foto pengurus.</p></div>'+groups.map(g=>'<div class="panel"><h3>'+g[0]+'</h3>'+g[1].map(j=>'<div><b>'+esc(j)+'</b>'+db.pengurus.filter(x=>x.jabatan===j).map(x=>'<div class="profile-row">'+(x.foto?'<img class="avatar" src="'+x.foto+'">':'<div class="avatar">👤</div>')+'<div class="grow">'+esc(x.nama)+'</div>'+(isAdmin()?'<button class="btn small" data-act="edit-board" data-id="'+x.id+'">Edit</button> <button class="btn danger small" data-act="del-board" data-id="'+x.id+'">Hapus</button>':"")+'</div>').join("")+'<p></p></div>').join("")+'</div>').join("")}
+function formBoard(item){if(!adminOnly())return;let body='<form><div class="field"><label>Nama Lengkap *</label><input name="nama" required value="'+esc(item?.nama||"")+'"></div><div class="field"><label>Jabatan *</label><select name="jabatan" required><option value="">-- Pilih Jabatan --</option>'+jobs.map(j=>'<option'+(item?.jabatan===j?" selected":"")+'>'+esc(j)+'</option>').join("")+'</select></div><div class="field"><label>Foto JPG/PNG maksimal 1 MB</label><input name="foto" type="file" accept="image/jpeg,image/png"></div>'+(item?.foto?'<img class="avatar" src="'+item.foto+'">':"")+'<div class="formactions"><button type="button" class="btn" data-close>Batal</button><button class="btn primary">Simpan Profil</button></div></form>';modal("Profil Pengurus",body,async f=>{let nama=f.elements.nama.value.trim(),jabatan=f.elements.jabatan.value;if(!nama||!jabatan)return toast("Nama dan jabatan wajib diisi.");let foto;try{foto=await getPhoto(f.elements.foto,item?.foto)}catch(e){return toast(e.message)}if(item)Object.assign(item,{nama,jabatan,foto});else db.pengurus.push({id:nextId(db.pengurus),nama,jabatan,foto});if(save()){closeModal();render("pengurus");toast("Profil pengurus tersimpan.")}})}
+function usersPage(c){c.innerHTML+='<div class="panel"><div class="ph"><h3>Daftar Pengguna</h3><button class="btn primary" data-act="add-user">＋ Tambah Pengguna</button></div><div class="tablewrap"><table><thead><tr><th>Nama</th><th>Username</th><th>Hak Akses</th><th>Aksi</th></tr></thead><tbody>'+db.users.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+esc(x.username)+'</td><td>'+esc(x.role==="admin"?"Administrator":"Anggota - lihat saja")+'</td><td><button class="btn small" data-act="edit-user" data-id="'+x.id+'">Edit</button> '+(x.username!=="admin"?'<button class="btn danger small" data-act="del-user" data-id="'+x.id+'">Hapus</button>':"")+'</td></tr>').join("")+'</tbody></table></div></div>'}
+function formUser(x){if(!adminOnly())return;let body='<form><div class="field"><label>Nama</label><input name="name" required value="'+esc(x?.name||"")+'"></div><div class="field"><label>Username</label><input name="username" required value="'+esc(x?.username||"")+'"></div><div class="field"><label>'+(x?"Kata sandi baru (opsional)":"Kata sandi")+'</label><input name="password" type="password" '+(!x?"required":"")+' minlength="4"></div><div class="field"><label>Hak Akses</label><select name="role"><option value="anggota"'+(x?.role!=="admin"?" selected":"")+'>Anggota</option><option value="admin"'+(x?.role==="admin"?" selected":"")+'>Admin</option></select></div><button class="btn primary">Simpan</button></form>';modal("Pengguna",body,f=>{let name=f.elements.name.value.trim(),username=f.elements.username.value.trim(),password=f.elements.password.value,role=f.elements.role.value;if(db.users.some(u=>u.username.toLowerCase()===username.toLowerCase()&&u.id!==x?.id))return toast("Username sudah dipakai.");if(password&&password.length<4)return toast("Kata sandi minimal 4 karakter.");if(x){Object.assign(x,{name,username,role});if(password)x.password=password}else db.users.push({id:nextId(db.users),name,username,password,role});if(save()){closeModal();render("pengguna")}})}
+function backupPage(c){c.innerHTML+='<div class="panel"><h3>Backup Data</h3><button class="btn primary" data-act="export">Unduh Backup JSON</button></div><div class="panel"><h3>Pulihkan Backup</h3><input id="backupFile" type="file" accept=".json,application/json"><p><button class="btn blue" data-act="import">Pulihkan Backup</button></p></div><div class="panel"><h3>Reset Data</h3><button class="btn danger" data-act="reset">Reset Data Administrasi</button></div>'}
+function exportBackup(){if(!adminOnly())return;let blob=new Blob([JSON.stringify({app:"PMR MADYA BONERATE",data:db},null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="Backup_PMR_Bonerate_"+today()+".json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function importBackup(){if(!adminOnly())return;let f=document.getElementById("backupFile").files[0];if(!f)return toast("Pilih file backup.");let r=new FileReader();r.onload=()=>{try{let p=JSON.parse(r.result),d=p.data||p,def=defaults();["users","anggota","kegiatan","materi","program","inventaris","pengumuman"].forEach(k=>{if(!Array.isArray(d[k]))throw Error()});["attendance","profile","tataTertib","pengurus"].forEach(k=>{if(d[k]===undefined)d[k]=clone(def[k])});if(!confirm("Data saat ini akan diganti. Lanjutkan?"))return;db=d;save();setLogo();render("dashboard");toast("Backup dipulihkan.")}catch(e){toast("File backup tidak valid.")}};r.readAsText(f)}
+function resetDB(){if(!adminOnly()||!confirm("Hapus seluruh data administrasi?"))return;let a=db.users.find(x=>x.username==="admin")||defaults().users[0],p=db.profile;db=defaults();db.users=[a];db.profile=p;save();render("dashboard")}
+function profilePage(c){c.innerHTML+='<div class="panel"><h3>Profil Aplikasi</h3><p>SMPN Bonerate No. 6 Kepulauan Selayar</p><div class="field"><label>Nama Aplikasi</label><input id="pname" value="'+esc(db.profile.name)+'" '+(!isAdmin()?"disabled":"")+'></div><img class="avatar" style="width:120px;height:120px" src="'+(db.profile.logo||defaultLogo())+'" alt="Logo aplikasi">'+(isAdmin()?'<div class="field"><label>Unggah logo JPG/PNG maksimal 1 MB</label><input id="plogo" type="file" accept="image/jpeg,image/png"></div><button class="btn primary" data-act="save-profile">Simpan Profil</button> <button class="btn" data-act="reset-logo">Logo Bawaan</button>':"")+'<div class="notice">Data disimpan di browser perangkat. Lakukan backup berkala. Unggah logo PMI asli pada kolom di atas.</div></div>'}
+document.getElementById("content").addEventListener("click",async e=>{let b=e.target.closest("[data-act]");if(!b)return;let a=b.dataset.act,k=b.dataset.key,id=Number(b.dataset.id);
+if(a==="add")return formRecord(k);if(a==="edit")return formRecord(k,db[cfg[k].list].find(x=>x.id===id));if(a==="view")return viewRecord(k,id);if(a==="delete")return delRecord(k,id);if(a==="attendance")return attendance(id);if(a==="view-pdf"){let item=db.materi.find(x=>x.id===id);if(!item||!item.isiPdf)return toast("File PDF tidak ditemukan.");let body='<p>'+esc(item.judul)+' · '+esc(item.kategori)+'</p><iframe title="Isi Materi PDF" src="'+item.isiPdf+'" style="width:100%;height:65vh;border:1px solid #ddd;border-radius:8px"></iframe><div class="formactions"><a class="btn blue" href="'+item.isiPdf+'" target="_blank" rel="noopener">Buka PDF di tab baru</a><button class="btn primary" data-close>Tutup</button></div>';return modal("Materi PDF",body)}
+if(a==="add-board")return formBoard();if(a==="edit-board")return formBoard(db.pengurus.find(x=>x.id===id));if(a==="del-board"){if(!adminOnly()||!confirm("Hapus profil pengurus?"))return;db.pengurus=db.pengurus.filter(x=>x.id!==id);save();render("pengurus");return}
+if(a==="add-user")return formUser();if(a==="edit-user")return formUser(db.users.find(x=>x.id===id));if(a==="del-user"){if(!adminOnly())return;let u=db.users.find(x=>x.id===id);if(!u||u.username==="admin"||u.id===me.id)return toast("Akun tidak dapat dihapus.");if(confirm("Hapus pengguna?")){db.users=db.users.filter(x=>x.id!==id);save();render("pengguna")}return}
+if(a==="export")return exportBackup();if(a==="import")return importBackup();if(a==="reset")return resetDB();
+if(a==="reset-logo"){if(!adminOnly())return;db.profile.logo="";save();setLogo();render("profil");return}
+if(a==="save-profile"){if(!adminOnly())return;let name=document.getElementById("pname").value.trim(),file=document.getElementById("plogo").files[0],logo=db.profile.logo||"";if(file){try{logo=await getPhoto({files:[file]},"")}catch(err){return toast(err.message)}}db.profile.name=name||"PMR MADYA BONERATE";db.profile.logo=logo;if(save()){setLogo();render("profil");toast("Profil disimpan.")}}
+});
+
+window.pmrApplyCloudData = next => {
+  try {
+    db = next;
+    setLogo();
+    if (me) render("dashboard");
+  } catch(e) { console.error(e); }
+};
+window.pmrFirebaseFinishLogin = x => {
+  me = x;
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  document.getElementById("userLabel").textContent = x.name;
+  document.querySelectorAll(".adminonly").forEach(b=>b.classList.toggle("hidden", !isAdmin()));
+  render("dashboard");
+};
+
+(function init(){let d=defaults();Object.keys(d).forEach(k=>{if(db[k]==null)db[k]=clone(d[k])});["anggota","kegiatan","materi","program","inventaris","pengumuman","pengurus"].forEach(k=>{if(!Array.isArray(db[k]))db[k]=[]});if(!db.users.some(x=>x.username==="admin"))db.users.push(d.users[0]);save();setLogo()})();
+</script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDzklh9u0lJKizIhn2O2gvN4hXCkFxd6gs",
+  authDomain: "pmr-madya-bonerate.firebaseapp.com",
+  projectId: "pmr-madya-bonerate",
+  storageBucket: "pmr-madya-bonerate.firebasestorage.app",
+  messagingSenderId: "943217374469",
+  appId: "1:943217374469:web:cc62fa22592cce10f5736c",
+  measurementId: "G-EBY4TV2282"
+};
+
+let app, auth, cloudDb, firebaseUser=null, role=null, syncBusy=false, lastCloudWrite=0;
+const collectionsMap = {
+  anggota:"anggota", kegiatan:"kegiatan", materi:"materi", program:"program_kerja",
+  inventaris:"inventaris", pengumuman:"pengumuman", pengurus:"profil_pengurus"
+};
+const listKeys = ["anggota","kegiatan","materi","program","inventaris","pengumuman","pengurus"];
+
+try {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  await setPersistence(auth, browserLocalPersistence);
+  cloudDb = initializeFirestore(app, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+  });
+  window.pmrFirebaseAvailable = true;
+  window.pmrFirebaseStatus = "Firebase siap. Login online menggunakan email Firebase.";
+} catch (e) {
+  console.error("Firebase init:", e);
+  window.pmrFirebaseAvailable = false;
+  window.pmrFirebaseStatus = "Firebase belum tersedia. Mode lokal tetap dapat digunakan.";
+}
+
+function localDB() {
+  try { return JSON.parse(localStorage.getItem("pmr_madya_bonerate_v2") || "{}"); }
+  catch { return {}; }
+}
+function notify(msg) {
+  if (typeof window.toast === "function") window.toast(msg);
+  else alert(msg);
+}
+async function readCloudData() {
+  const next = localDB();
+  for (const key of listKeys) if (!Array.isArray(next[key])) next[key] = [];
+  for (const [localKey, cloudName] of Object.entries(collectionsMap)) {
+    // Current published rules intentionally restrict anggota and absensi to admins.
+    if (role !== "admin" && (localKey === "anggota")) continue;
+    const snap = await getDocs(collection(cloudDb, cloudName));
+    if (!snap.empty) {
+      next[localKey] = snap.docs.map(d => ({ ...d.data(), _cloudId: d.id }));
+      next[localKey] = next[localKey].map(x => { delete x._cloudId; return x; });
+    }
+  }
+  if (role === "admin") {
+    const t = await getDocs(collection(cloudDb, "tata_tertib"));
+    if (!t.empty) next.tataTertib = t.docs[0].data();
+    const a = await getDocs(collection(cloudDb, "absensi"));
+    if (!a.empty) {
+      next.attendance = {};
+      a.docs.forEach(d => { const v=d.data(); if(v.kegiatanId!=null) next.attendance[v.kegiatanId]=v.records||{}; });
+    }
+  }
+  const prof = await getDocs(collection(cloudDb, "profil_aplikasi"));
+  if (!prof.empty) next.profile = prof.docs[0].data();
+  localStorage.setItem("pmr_madya_bonerate_v2", JSON.stringify(next));
+  // Existing classic script keeps db in memory; refresh it through a safe public hook.
+  if (typeof window.pmrApplyCloudData === "function") window.pmrApplyCloudData(next);
+}
+// Perubahan disimpan sebagai antrean lokal terpisah. Penghapusan hanya dikirim
+// jika ada tindakan hapus yang eksplisit dari aplikasi; tidak ada mirror/delete-all.
+const QUEUE_KEY = "pmr_madya_bonerate_sync_queue_v1";
+const singletonMap = { profile: ["profil_aplikasi", "utama"], tataTertib: ["tata_tertib", "utama"] };
+function stable(value) {
+  if (Array.isArray(value)) return "[" + value.map(stable).join(",") + "]";
+  if (value && typeof value === "object") return "{" + Object.keys(value).sort().map(k => JSON.stringify(k)+":"+stable(value[k])).join(",") + "}";
+  return JSON.stringify(value);
+}
+function readQueue() {
+  try { const q = JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]"); return Array.isArray(q) ? q : []; }
+  catch { return []; }
+}
+function writeQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
+function addQueueOp(q, op) {
+  const ix = q.findIndex(x => x.key === op.key);
+  if (ix >= 0) { op.base = q[ix].base; q[ix] = op; }
+  else q.push(op);
+}
+function recordDiff(before, after) {
+  const oldDb = before ? JSON.parse(before) : null;
+  if (!oldDb || !after) return;
+  const q = readQueue();
+  for (const [localKey, cloudName] of Object.entries(collectionsMap)) {
+    const oldArr = Array.isArray(oldDb[localKey]) ? oldDb[localKey] : [];
+    const newArr = Array.isArray(after[localKey]) ? after[localKey] : [];
+    const oldMap = new Map(oldArr.filter(x => x && x.id != null).map(x => [String(x.id), x]));
+    const newMap = new Map(newArr.filter(x => x && x.id != null).map(x => [String(x.id), x]));
+    for (const [id, item] of newMap) {
+      const base = oldMap.get(id) ?? null;
+      if (stable(base) !== stable(item)) addQueueOp(q, { key: cloudName+"/"+id, collection: cloudName, id, type: "set", base, data: item, changedAt: Date.now(), status: "pending" });
+    }
+    for (const [id, item] of oldMap) if (!newMap.has(id)) addQueueOp(q, { key: cloudName+"/"+id, collection: cloudName, id, type: "delete", base: item, data: null, changedAt: Date.now(), status: "pending" });
+  }
+  for (const [localKey, pair] of Object.entries(singletonMap)) {
+    const base = oldDb[localKey] ?? null, data = after[localKey] ?? null;
+    if (stable(base) !== stable(data)) addQueueOp(q, { key: pair[0]+"/"+pair[1], collection: pair[0], id: pair[1], type: "set", base, data, changedAt: Date.now(), status: "pending" });
+  }
+  const oldAtt = oldDb.attendance || {}, newAtt = after.attendance || {};
+  for (const id of new Set([...Object.keys(oldAtt), ...Object.keys(newAtt)])) {
+    const base = oldAtt[id] ?? null, records = newAtt[id] ?? null;
+    if (stable(base) !== stable(records)) addQueueOp(q, { key: "absensi/"+id, collection: "absensi", id: String(id), type: records == null ? "delete" : "set", base: base == null ? null : {kegiatanId: String(id), records: base}, data: records == null ? null : {kegiatanId: String(id), records}, changedAt: Date.now(), status: "pending" });
+  }
+  writeQueue(q);
+}
+window.pmrRecordLocalChanges = (before, after) => {
+  try { recordDiff(before, after); updateSyncStatus(); } catch (e) { console.error("Catat antrean lokal:", e); }
+};
+function updateSyncStatus(message) {
+  const el = document.getElementById("syncStatus");
+  if (!el) return;
+  const pending = readQueue();
+  if (message) el.textContent = "Status: " + message;
+  else if (!navigator.onLine) el.textContent = "Status: Offline";
+  else if (pending.some(x => x.status === "conflict")) el.textContent = "Status: Konflik perlu ditinjau";
+  else if (pending.length) el.textContent = "Status: " + pending.length + " perubahan tertunda";
+  else if (!firebaseUser) el.textContent = navigator.onLine ? "Status: Lokal / belum login Firebase" : "Status: Offline";
+  else el.textContent = "Status: Online / tersinkron";
+}
+window.pmrUpdateSyncStatus = updateSyncStatus;
+function cloudDocData(snap) { return snap.exists() ? snap.data() : null; }
+async function flushQueue() {
+  if (!firebaseUser || role !== "admin" || !navigator.onLine) return {ok:false, pending:readQueue().length};
+  const q = readQueue();
+  if (!q.length) return {ok:true, pending:0};
+  const remaining = [], conflicts = [];
+  for (const op of q) {
+    try {
+      const ref = doc(cloudDb, op.collection, String(op.id));
+      const snap = await getDoc(ref);
+      const cloud = cloudDocData(snap);
+      // Compare with the value that existed when this change was first queued.
+      // If another device changed the same document, keep the operation pending.
+      if (stable(cloud) !== stable(op.base)) {
+        op.status = "conflict"; op.lastError = "Data Firebase berubah sejak perubahan lokal dibuat.";
+        remaining.push(op); conflicts.push(op.key); continue;
+      }
+      if (op.type === "delete") {
+        if (snap.exists()) await deleteDoc(ref);
+      } else {
+        await setDoc(ref, op.data || {});
+      }
+    } catch (e) {
+      op.status = "failed"; op.lastError = String(e?.message || e); remaining.push(op);
+    }
+  }
+  writeQueue(remaining);
+  if (conflicts.length) notify("Antrean tersimpan, tetapi ada "+conflicts.length+" konflik. Data tidak ditimpa; perlu diperiksa admin.");
+  else if (remaining.length) notify("Sebagian perubahan masih tertunda. Periksa koneksi dan Security Rules.");
+  else if (q.length) notify("Antrean perubahan berhasil disinkronkan ke Firebase.");
+  updateSyncStatus();
+  return {ok:remaining.length===0, pending:remaining.length, conflicts};
+}
+async function syncAll(data) {
+  // Tidak lagi menyamakan seluruh perangkat dengan Firebase dan tidak menghapus
+  // dokumen hanya karena tidak ada dalam array lokal. Hanya kirim perubahan antrean.
+  return flushQueue();
+}
+window.pmrFirebaseQueueSync = () => {
+  if (!firebaseUser || role !== "admin") return;
+  clearTimeout(window.__pmrSyncTimer);
+  window.__pmrSyncTimer = setTimeout(() => syncAll(), 900);
+};
+window.pmrFirebaseSyncPending = flushQueue;
+window.addEventListener("online", () => {
+  updateSyncStatus();
+  if (firebaseUser && role === "admin") syncAll();
+});
+window.addEventListener("offline", () => updateSyncStatus());
+updateSyncStatus();
+
+
+window.pmrFirebaseLogin = async (email, password) => {
+  if (!auth || !cloudDb || !navigator.onLine) {
+    notify("Firebase tidak terhubung. Untuk mode offline gunakan akun lokal yang tersimpan di perangkat ini.");
+    return "offline";
+  }
+  try {
+    const credential = await signInWithEmailAndPassword(auth, email, password);
+    firebaseUser = credential.user;
+    const userRef = doc(cloudDb, "users", firebaseUser.uid);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) {
+      await auth.signOut();
+      firebaseUser = null;
+      notify("Akun Firebase belum memiliki dokumen peran di koleksi users.");
+      return "failed";
+    }
+    role = userSnap.data().role;
+    if (!["admin","anggota"].includes(role)) {
+      await auth.signOut();
+      firebaseUser = null;
+      notify("Peran akun tidak valid.");
+      return "failed";
+    }
+    // Admin: send queued offline edits first, with per-document conflict checks.
+    // Never replace local state from cloud while queued edits are waiting.
+    try {
+      let queuePending = false;
+      if (role === "admin" && readQueue().length) {
+        const queueResult = await flushQueue();
+        queuePending = queueResult.pending > 0;
+      }
+      if (!queuePending) {
+        await readCloudData();
+      } else {
+        // Keep the local copy visible while queued changes/conflicts are unresolved.
+        notify("Data lokal dipertahankan karena masih ada perubahan tertunda. Periksa status sinkronisasi sebelum mengedit data yang sama.");
+      }
+      updateSyncStatus();
+    } catch (e) {
+      console.error("Cloud data load:", e);
+      notify("Login berhasil, tetapi sebagian data belum dapat dimuat. Periksa koleksi dan Security Rules.");
+    }
+    if (typeof window.pmrFirebaseFinishLogin === "function") {
+      window.pmrFirebaseFinishLogin({
+        id: firebaseUser.uid,
+        username: email,
+        name: userSnap.data().name || email,
+        role
+      });
+    }
+    notify("Login Firebase berhasil.");
+    return "success";
+  } catch (e) {
+    console.error("Firebase login:", e);
+    if (!navigator.onLine) {
+      notify("Tidak ada internet. Gunakan akun lokal yang tersimpan di perangkat ini.");
+      return "offline";
+    }
+    notify("Login Firebase gagal. Periksa email, kata sandi, dan akun di Authentication.");
+    return "failed";
+  }
+};
+onAuthStateChanged(auth, user => { if (!user) { firebaseUser=null; role=null; } });
+window.pmrFirebaseSignOut = async () => {
+  try { if(auth) await auth.signOut(); } catch {}
+  firebaseUser=null; role=null;
+};
+window.pmrFirebaseLoadCloud = async () => {
+  if (!firebaseUser) return;
+  try { await readCloudData(); } catch(e) { console.error(e); }
+};
+window.pmrFirebaseStatus = "Firebase SDK siap. Gunakan email akun Firebase saat online; mode lokal hanya tersedia pada perangkat yang memiliki akun lokal.";
+</script>
+
+</body></html>
