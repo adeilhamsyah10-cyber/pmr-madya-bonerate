@@ -253,10 +253,24 @@ async function readCloudData() {
     // Current published rules intentionally restrict anggota and absensi to admins.
     if (role !== "admin" && (localKey === "anggota")) continue;
     const snap = await getDocs(collection(cloudDb, cloudName));
-    if (!snap.empty) {
-      next[localKey] = snap.docs.map(d => ({ ...d.data(), _cloudId: d.id }));
-      next[localKey] = next[localKey].map(x => { delete x._cloudId; return x; });
+    // Gabungkan data cloud dan lokal. Data lokal yang belum ada di cloud tidak
+    // dibuang; perubahan set/delete yang masih antre tetap menjadi sumber utama.
+    const cloudItems = snap.docs.map(d => ({ ...d.data(), id: d.data().id ?? d.id }));
+    const localItems = Array.isArray(next[localKey]) ? next[localKey] : [];
+    const pendingOps = readQueue().filter(op => op.collection === cloudName);
+    const merged = new Map();
+    for (const item of cloudItems) merged.set(String(item.id), item);
+    for (const item of localItems) {
+      if (!item || item.id == null) continue;
+      const key = String(item.id);
+      if (!merged.has(key)) merged.set(key, item);
     }
+    for (const op of pendingOps) {
+      const key = String(op.id);
+      if (op.type === "delete") merged.delete(key);
+      else if (op.type === "set" && op.data) merged.set(key, op.data);
+    }
+    next[localKey] = Array.from(merged.values());
   }
   if (role === "admin") {
     const t = await getDocs(collection(cloudDb, "tata_tertib"));
@@ -268,7 +282,9 @@ async function readCloudData() {
     }
   }
   const prof = await getDocs(collection(cloudDb, "profil_aplikasi"));
-  if (!prof.empty) next.profile = prof.docs[0].data();
+  const profileOp = readQueue().find(op => op.collection === "profil_aplikasi" && op.id === "utama");
+  if (profileOp?.type === "set" && profileOp.data) next.profile = profileOp.data;
+  else if (!prof.empty) next.profile = prof.docs[0].data();
   localStorage.setItem("pmr_madya_bonerate_v2", JSON.stringify(next));
   // Existing classic script keeps db in memory; refresh it through a safe public hook.
   if (typeof window.pmrApplyCloudData === "function") window.pmrApplyCloudData(next);
@@ -327,8 +343,8 @@ function updateSyncStatus(message) {
   const pending = readQueue();
   if (message) el.textContent = "Status: " + message;
   else if (!navigator.onLine) el.textContent = "Status: Offline";
-  else if (pending.some(x => x.status === "conflict")) el.textContent = "Status: Konflik perlu ditinjau";
-  else if (pending.length) el.textContent = "Status: " + pending.length + " perubahan tertunda";
+  else if (pending.some(x => x.status === "conflict")) el.textContent = "Status: Sinkronisasi tertahan — data lokal dipertahankan";
+  else if (pending.length) el.textContent = "Status: Sinkronisasi belum selesai — data lokal dipertahankan";
   else if (!firebaseUser) el.textContent = navigator.onLine ? "Status: Lokal / belum login Firebase" : "Status: Offline";
   else el.textContent = "Status: Online / tersinkron";
 }
@@ -360,8 +376,11 @@ async function flushQueue() {
     }
   }
   writeQueue(remaining);
-  if (conflicts.length) notify("Antrean tersimpan, tetapi ada "+conflicts.length+" konflik. Data tidak ditimpa; perlu diperiksa admin.");
-  else if (remaining.length) notify("Sebagian perubahan masih tertunda. Periksa koneksi dan Security Rules.");
+  if (conflicts.length) notify("Sinkronisasi tertahan karena data cloud berbeda. Data lokal tetap disimpan dan tidak ditimpa. Periksa konflik sebelum menghapus antrean.");
+  else if (remaining.length) {
+    const reason = remaining.map(x => x.lastError || "").find(x => x);
+    notify("Sinkronisasi belum berhasil. Data lokal tetap disimpan. Detail: " + (reason || "periksa koneksi internet dan Firebase Security Rules."));
+  }
   else if (q.length) notify("Antrean perubahan berhasil disinkronkan ke Firebase.");
   updateSyncStatus();
   return {ok:remaining.length===0, pending:remaining.length, conflicts};
