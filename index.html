@@ -250,28 +250,36 @@ function notify(msg) {
 async function readCloudData() {
   const next = localDB();
   for (const key of listKeys) if (!Array.isArray(next[key])) next[key] = [];
+  const readFailures = [];
   for (const [localKey, cloudName] of Object.entries(collectionsMap)) {
-    // Current published rules intentionally restrict anggota and absensi to admins.
-    if (role !== "admin" && (localKey === "anggota")) continue;
-    const snap = await getDocs(collection(cloudDb, cloudName));
-    // Gabungkan data cloud dan lokal. Data lokal yang belum ada di cloud tidak
-    // dibuang; perubahan set/delete yang masih antre tetap menjadi sumber utama.
-    const cloudItems = snap.docs.map(d => ({ ...d.data(), id: d.data().id ?? d.id }));
-    const localItems = Array.isArray(next[localKey]) ? next[localKey] : [];
-    const pendingOps = readQueue().filter(op => op.collection === cloudName);
-    const merged = new Map();
-    for (const item of cloudItems) merged.set(String(item.id), item);
-    for (const item of localItems) {
-      if (!item || item.id == null) continue;
-      const key = String(item.id);
-      if (!merged.has(key)) merged.set(key, item);
+    try {
+      // Admin dan akun Anggota sama-sama mencoba membaca daftar anggota/pengurus.
+      // Hak akses sesungguhnya tetap ditentukan oleh Firestore Security Rules.
+      const snap = await getDocs(collection(cloudDb, cloudName));
+      // Gabungkan data cloud dan lokal. Data lokal yang belum ada di cloud tidak
+      // dibuang; perubahan set/delete yang masih antre tetap menjadi sumber utama.
+      const cloudItems = snap.docs.map(d => ({ ...d.data(), id: d.data().id ?? d.id }));
+      const localItems = Array.isArray(next[localKey]) ? next[localKey] : [];
+      const pendingOps = readQueue().filter(op => op.collection === cloudName);
+      const merged = new Map();
+      for (const item of cloudItems) merged.set(String(item.id), item);
+      for (const item of localItems) {
+        if (!item || item.id == null) continue;
+        const key = String(item.id);
+        if (!merged.has(key)) merged.set(key, item);
+      }
+      for (const op of pendingOps) {
+        const key = String(op.id);
+        if (op.type === "delete") merged.delete(key);
+        else if (op.type === "set" && op.data) merged.set(key, op.data);
+      }
+      next[localKey] = Array.from(merged.values());
+    } catch (e) {
+      // Bila satu koleksi ditolak rules, koleksi lain tetap dicoba dan data lokal
+      // untuk koleksi yang gagal tidak disentuh.
+      readFailures.push(cloudName + ": " + String(e?.code || e?.message || e));
+      console.error("Gagal membaca koleksi Firebase " + cloudName, e);
     }
-    for (const op of pendingOps) {
-      const key = String(op.id);
-      if (op.type === "delete") merged.delete(key);
-      else if (op.type === "set" && op.data) merged.set(key, op.data);
-    }
-    next[localKey] = Array.from(merged.values());
   }
   if (role === "admin") {
     const t = await getDocs(collection(cloudDb, "tata_tertib"));
@@ -289,6 +297,12 @@ async function readCloudData() {
   localStorage.setItem("pmr_madya_bonerate_v2", JSON.stringify(next));
   // Existing classic script keeps db in memory; refresh it through a safe public hook.
   if (typeof window.pmrApplyCloudData === "function") window.pmrApplyCloudData(next);
+  if (readFailures.length) {
+    window.pmrCloudReadFailures = readFailures;
+    notify("Sebagian data Firebase tidak dapat dibaca. Data lokal dipertahankan. Periksa Security Rules untuk koleksi: " + readFailures.map(x=>x.split(":")[0]).join(", ") + ".");
+  } else {
+    window.pmrCloudReadFailures = [];
+  }
 }
 // Perubahan disimpan sebagai antrean lokal terpisah. Penghapusan hanya dikirim
 // jika ada tindakan hapus yang eksplisit dari aplikasi; tidak ada mirror/delete-all.
