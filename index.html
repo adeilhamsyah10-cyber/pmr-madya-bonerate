@@ -188,7 +188,10 @@ window.pmrApplyCloudData = next => {
   try {
     db = next;
     setLogo();
-    if (me) render("dashboard");
+    if (me) {
+      const active=document.querySelector(".nav.active");
+      render(active?.dataset?.page||"dashboard");
+    }
   } catch(e) { console.error(e); }
 };
 window.pmrFirebaseFinishLogin = x => {
@@ -218,6 +221,47 @@ const firebaseConfig = {
 };
 
 let app, auth, cloudDb, firebaseUser=null, role=null, syncBusy=false, lastCloudWrite=0;
+let realtimeUnsubs=[];
+function stopRealtimeListeners(){for(const stop of realtimeUnsubs){try{stop()}catch{}}realtimeUnsubs=[];}
+function mergeCloudSnapshot(localKey, cloudName, docs){
+ const current=localDB();
+ const localItems=Array.isArray(current[localKey])?current[localKey]:[];
+ const pending=readQueue().filter(op=>op.collection===cloudName);
+ const merged=new Map();
+ for(const d of docs) merged.set(String(d.id),d);
+ for(const item of localItems) if(item&&item.id!=null&&!merged.has(String(item.id)))merged.set(String(item.id),item);
+ for(const op of pending){const key=String(op.id);if(op.type==="delete")merged.delete(key);else if(op.type==="set"&&op.data)merged.set(key,op.data);}
+ current[localKey]=Array.from(merged.values());
+ localStorage.setItem("pmr_madya_bonerate_v2",JSON.stringify(current));
+ if(typeof window.pmrApplyCloudData==="function")window.pmrApplyCloudData(current);
+}
+function startRealtimeListeners(){
+ stopRealtimeListeners();
+ if(!firebaseUser)return;
+ for(const [localKey,cloudName] of Object.entries(collectionsMap)){
+  try{const stop=onSnapshot(collection(cloudDb,cloudName),snap=>{
+   const docs=snap.docs.map(d=>({...d.data(),id:d.data().id??d.id}));
+   mergeCloudSnapshot(localKey,cloudName,docs);updateSyncStatus();
+  },err=>console.error("Realtime "+cloudName,err));realtimeUnsubs.push(stop);}
+  catch(e){console.error("Tidak dapat memasang listener "+cloudName,e);}
+ }
+ for(const [cloudName,localKey] of [["profil_aplikasi","profile"],["tata_tertib","tataTertib"]]){
+  try{const stop=onSnapshot(collection(cloudDb,cloudName),snap=>{
+   const current=localDB(),queued=readQueue().find(op=>op.collection===cloudName);
+   if(queued?.type==="set"&&queued.data)current[localKey]=queued.data;
+   else if(!snap.empty)current[localKey]=snap.docs[0].data();
+   localStorage.setItem("pmr_madya_bonerate_v2",JSON.stringify(current));
+   if(typeof window.pmrApplyCloudData==="function")window.pmrApplyCloudData(current);
+  },err=>console.error("Realtime "+cloudName,err));realtimeUnsubs.push(stop);}
+  catch(e){console.error(e);}
+ }
+ try{const stop=onSnapshot(collection(cloudDb,"absensi"),snap=>{
+  const current=localDB();if(role==="admin")current.attendance={};
+  snap.docs.forEach(d=>{const v=d.data();if(v.kegiatanId!=null){if(!current.attendance)current.attendance={};current.attendance[v.kegiatanId]=v.records||{};}});
+  localStorage.setItem("pmr_madya_bonerate_v2",JSON.stringify(current));
+  if(typeof window.pmrApplyCloudData==="function")window.pmrApplyCloudData(current);
+ },err=>console.error("Realtime absensi",err));realtimeUnsubs.push(stop);}catch(e){console.error(e);}
+}
 const collectionsMap = {
   anggota:"anggota", kegiatan:"kegiatan", materi:"materi", program:"program_kerja",
   inventaris:"inventaris", pengumuman:"pengumuman", pengurus:"profil_pengurus"
@@ -537,7 +581,8 @@ window.pmrFirebaseLogin = async (email, password) => {
         role
       });
     }
-    notify("Login Firebase berhasil.");
+    startRealtimeListeners();
+    notify("Login Firebase berhasil. Pembaruan cloud akan tampil otomatis saat perangkat online.");
     return "success";
   } catch (e) {
     console.error("Firebase login:", e);
@@ -551,6 +596,7 @@ window.pmrFirebaseLogin = async (email, password) => {
 };
 onAuthStateChanged(auth, user => { if (!user) { firebaseUser=null; role=null; } });
 window.pmrFirebaseSignOut = async () => {
+  stopRealtimeListeners();
   try { if(auth) await auth.signOut(); } catch {}
   firebaseUser=null; role=null;
 };
