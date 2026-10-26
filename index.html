@@ -514,6 +514,12 @@ window.pmrFirebaseLogin = async (email, password) => {
       }
       if (!queuePending) {
         await readCloudData();
+        // Setelah data cloud dan lokal digabung, pulihkan dokumen lokal yang
+        // belum ada di Firestore. Dokumen yang ada tidak ditimpa.
+        if (role === "admin") {
+          const restored = await restoreMissingLocalDocs();
+          if (restored.created > 0) await readCloudData();
+        }
       } else {
         // Keep the local copy visible while queued changes/conflicts are unresolved.
         notify("Data lokal dipertahankan karena masih ada perubahan tertunda. Periksa status sinkronisasi sebelum mengedit data yang sama.");
@@ -548,9 +554,42 @@ window.pmrFirebaseSignOut = async () => {
   try { if(auth) await auth.signOut(); } catch {}
   firebaseUser=null; role=null;
 };
+// Pemulihan aman: Admin dapat membuat dokumen cloud yang memang belum ada,
+// menggunakan salinan lokal. Dokumen yang sudah ada tidak pernah ditimpa.
+async function restoreMissingLocalDocs(){
+ if(!firebaseUser||role!=="admin"||!navigator.onLine)return {created:0,skipped:0,failed:0};
+ const local=localDB();let created=0,skipped=0,failed=0;const errors=[];
+ for(const [localKey,cloudName] of [["pengurus","profil_pengurus"],["anggota","anggota"]]){
+  const items=Array.isArray(local[localKey])?local[localKey]:[];
+  for(const original of items){
+   if(!original||original.id==null){skipped++;continue;}
+   try{
+    let data={...original};
+    if(typeof data.foto==="string"&&data.foto.startsWith("data:image/")&&data.foto.length>700*1024)data.foto=await compressDataUrl(data.foto);
+    const ref=doc(cloudDb,cloudName,String(data.id));
+    const snap=await getDoc(ref);
+    if(snap.exists()){skipped++;continue;}
+    await setDoc(ref,data);
+    created++;
+    // Simpan foto hasil kompresi kembali ke salinan lokal tanpa mengubah data lain.
+    if(data.foto!==original.foto){
+     const live=localDB(),arr=live[localKey]||[],ix=arr.findIndex(x=>String(x.id)===String(data.id));
+     if(ix>=0){arr[ix]={...arr[ix],foto:data.foto};live[localKey]=arr;localStorage.setItem("pmr_madya_bonerate_v2",JSON.stringify(live));}
+    }
+   }catch(e){failed++;errors.push(cloudName+"/"+original.id+": "+String(e?.code||e?.message||e));}
+  }
+ }
+ if(created||failed)notify("Pemulihan data lokal → Firebase selesai. Dokumen baru: "+created+"; sudah ada (tidak ditimpa): "+skipped+"; gagal: "+failed+(errors.length?" . Detail pertama: "+errors[0]:""));
+ return {created,skipped,failed,errors};
+}
+window.pmrFirebaseRestoreMissing = restoreMissingLocalDocs;
 window.pmrFirebaseLoadCloud = async () => {
   if (!firebaseUser) return;
-  try { await readCloudData(); } catch(e) { console.error(e); }
+  try {
+    await readCloudData();
+    if(role==="admin") await restoreMissingLocalDocs();
+    await readCloudData();
+  } catch(e) { console.error(e); }
 };
 window.pmrFirebaseStatus = "Firebase SDK siap. Gunakan email akun Firebase saat online; mode lokal hanya tersedia pada perangkat yang memiliki akun lokal.";
 </script>
