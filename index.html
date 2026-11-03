@@ -594,7 +594,46 @@ window.pmrFirebaseLogin = async (email, password) => {
     return "failed";
   }
 };
-onAuthStateChanged(auth, user => { if (!user) { firebaseUser=null; role=null; } });
+onAuthStateChanged(auth, async user => {
+  if (!user) {
+    stopRealtimeListeners();
+    firebaseUser = null;
+    role = null;
+    updateSyncStatus();
+    return;
+  }
+  // Pulihkan sesi Firebase yang tersimpan saat halaman dibuka ulang.
+  // Ini penting agar admin yang kembali online setelah perangkat offline
+  // tetap dapat memasang listener dan mengirim antrean perubahan lokal.
+  if (firebaseUser && firebaseUser.uid === user.uid && role) return;
+  firebaseUser = user;
+  try {
+    const cachedRole = await getDoc(doc(cloudDb, "users", user.uid));
+    if (!cachedRole.exists()) {
+      role = null;
+      updateSyncStatus("Sesi Firebase aktif, tetapi profil peran belum tersedia");
+      return;
+    }
+    const restoredRole = cachedRole.data().role;
+    if (!["admin", "anggota"].includes(restoredRole)) {
+      role = null;
+      updateSyncStatus("Peran akun Firebase tidak valid");
+      return;
+    }
+    role = restoredRole;
+    startRealtimeListeners();
+    updateSyncStatus();
+    if (role === "admin" && navigator.onLine) {
+      await flushQueue();
+      await readCloudData();
+    }
+  } catch (e) {
+    console.warn("Pemulihan sesi Firebase:", e);
+    updateSyncStatus(navigator.onLine
+      ? "Firebase aktif, tetapi peran belum dapat dibaca"
+      : "Offline · antrean lokal tetap tersimpan");
+  }
+});
 window.pmrFirebaseSignOut = async () => {
   stopRealtimeListeners();
   try { if(auth) await auth.signOut(); } catch {}
